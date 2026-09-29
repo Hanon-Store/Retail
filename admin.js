@@ -9,19 +9,41 @@
 // ============================================================
 // ⚙️ الإعدادات — عدّل 3 سطور بس لما تغيّر مكان المشروع
 // ============================================================
-const GITHUB_OWNER = "MyDigital-ID";              // ← اسم المستخدم في GitHub
-const GITHUB_REPO  = "MyDigital-ID.github.io";    // ← اسم الريبو
-const FOLDER_PATH  = "Hanon-Store";               // ← اسم الفولدر (سيبه فاضي "" لو الملفات في الجذر)
+// ============================================================
+// ⚙️ الإعدادات — بيانات الريبو (يدخلها الأدمن مرة واحدة من شاشة الدخول)
+// ============================================================
+const OWNER_KEY  = "hanon_admin_owner";
+const REPO_KEY   = "hanon_admin_repo";
+const FOLDER_KEY = "hanon_admin_folder";
 
-// ============================================================
-// (مش محتاج تعدّل تحت كده)
-// ============================================================
-const GITHUB_BRANCH = "main";
-const DATA_PATH   = FOLDER_PATH ? `${FOLDER_PATH}/site-data.json` : "site-data.json";
-const IMAGES_PATH = FOLDER_PATH ? `${FOLDER_PATH}/assets/uploads` : "assets/uploads";
+let GITHUB_OWNER  = localStorage.getItem(OWNER_KEY) || "";
+let GITHUB_REPO   = localStorage.getItem(REPO_KEY) || "";
+let FOLDER_PATH   = localStorage.getItem(FOLDER_KEY) || "";
+let GITHUB_BRANCH = "main";
+
+let DATA_PATH   = "";
+let IMAGES_PATH = "";
+let DATA_API    = "";
+
+function recomputeGithubPaths() {
+  DATA_PATH   = FOLDER_PATH ? `${FOLDER_PATH}/site-data.json` : "site-data.json";
+  IMAGES_PATH = FOLDER_PATH ? `${FOLDER_PATH}/assets/uploads` : "assets/uploads";
+  DATA_API    = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${DATA_PATH}`;
+}
+recomputeGithubPaths();
+
+// رابط صفحة الموقع المنشورة (GitHub Pages) — بيتحسب تلقائي حسب الريبو
+function pagesBaseUrl() {
+  const ownerLower = GITHUB_OWNER.toLowerCase();
+  const repoLower = GITHUB_REPO.toLowerCase();
+  // لو الريبو هو ريبو الصفحة الرئيسية بتاع الحساب (owner.github.io) مفيش اسم ريبو في الرابط
+  if (repoLower === `${ownerLower}.github.io`) {
+    return `https://${ownerLower}.github.io`;
+  }
+  return `https://${ownerLower}.github.io/${GITHUB_REPO}`;
+}
 
 const TOKEN_KEY = "hanon_admin_token";
-const DATA_API  = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${DATA_PATH}`;
 
 let TOKEN = localStorage.getItem(TOKEN_KEY) || "";
 let storeData = null;
@@ -169,7 +191,7 @@ async function uploadImageToGitHub(base64Content, fileName) {
     throw new Error(err.message || "Upload failed");
   }
   
-  return `https://mydigital-id.github.io/${IMAGES_PATH}/${fileName}`;
+  return `${pagesBaseUrl()}/${IMAGES_PATH}/${fileName}`;
 }
 
 // ============================================================
@@ -192,24 +214,48 @@ togglePw.onclick = () => {
 };
 
 async function login() {
+  const owner = $("ownerInput").value.trim().replace(/^\/+|\/+$/g, "");
+  const repo = $("repoInput").value.trim().replace(/^\/+|\/+$/g, "");
+  const folder = $("folderInput").value.trim().replace(/^\/+|\/+$/g, "");
   const tok = $("pwInput").value.trim();
+
+  if (!owner || !repo) {
+    $("loginErr").textContent = "لازم تكتب اسم المستخدم/المنظمة واسم الريبو";
+    return;
+  }
   if (!tok) return;
-  
+
   $("loginErr").textContent = "";
   $("loginBtn").textContent = "جاري التحقق...";
   $("loginBtn").disabled = true;
-  
+
+  const prevOwner = GITHUB_OWNER, prevRepo = GITHUB_REPO, prevFolder = FOLDER_PATH;
+  GITHUB_OWNER = owner;
+  GITHUB_REPO = repo;
+  FOLDER_PATH = folder;
+  recomputeGithubPaths();
+
   try {
     TOKEN = tok;
     storeData = await fetchFromGitHub();
     localStorage.setItem(TOKEN_KEY, TOKEN);
+    localStorage.setItem(OWNER_KEY, GITHUB_OWNER);
+    localStorage.setItem(REPO_KEY, GITHUB_REPO);
+    localStorage.setItem(FOLDER_KEY, FOLDER_PATH);
     $("loginScreen").style.display = "none";
     $("dashboard").classList.add("active");
     renderAll();
     showStatus("تم الدخول بنجاح ✅", "ok");
   } catch (e) {
+    GITHUB_OWNER = prevOwner;
+    GITHUB_REPO = prevRepo;
+    FOLDER_PATH = prevFolder;
+    recomputeGithubPaths();
+
     if (e.message === "UNAUTHORIZED") {
-      $("loginErr").textContent = "التوكن غير صحيح أو منتهي الصلاحية";
+      $("loginErr").textContent = "التوكن غير صحيح أو منتهي الصلاحية، أو مفيش صلاحية Push على الريبو ده";
+    } else if (e.message && e.message.includes("404")) {
+      $("loginErr").textContent = "مفيش ملف site-data.json في الريبو/الفولدر ده — تأكد من الأسماء";
     } else {
       $("loginErr").textContent = "خطأ: " + e.message;
     }
@@ -219,8 +265,13 @@ async function login() {
   }
 }
 
+// تعبئة الحقول المحفوظة من قبل (لو موجودة)
+if (GITHUB_OWNER) $("ownerInput").value = GITHUB_OWNER;
+if (GITHUB_REPO) $("repoInput").value = GITHUB_REPO;
+if (FOLDER_PATH) $("folderInput").value = FOLDER_PATH;
+
 // محاولة دخول تلقائية
-if (TOKEN) {
+if (TOKEN && GITHUB_OWNER && GITHUB_REPO) {
   $("pwInput").value = TOKEN;
   login();
 }

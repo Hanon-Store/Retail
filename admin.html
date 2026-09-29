@@ -684,16 +684,26 @@
   <h1>حنون</h1>
   <p class="subtitle">لوحة تحكم المتجر</p>
   
+  <div class="pw-wrap" style="margin-bottom:10px;">
+    <input type="text" id="ownerInput" placeholder="اسم المستخدم/المنظمة في GitHub (مثال: Hanon-Store)" autocomplete="off">
+  </div>
+  <div class="pw-wrap" style="margin-bottom:10px;">
+    <input type="text" id="repoInput" placeholder="اسم الريبو (مثال: Retail)" autocomplete="off">
+  </div>
+  <div class="pw-wrap" style="margin-bottom:10px;">
+    <input type="text" id="folderInput" placeholder="اسم الفولدر داخل الريبو (اتركه فاضي لو الملفات في الجذر مباشرة)" autocomplete="off">
+  </div>
+
   <div class="pw-wrap">
-    <input type="password" id="pwInput" placeholder="أدخل رمز الدخول" autocomplete="off">
+    <input type="password" id="pwInput" placeholder="أدخل رمز الدخول (GitHub Token)" autocomplete="off">
     <button type="button" id="togglePw" class="toggle-pw">👁️</button>
   </div>
   
   <button class="btn-primary" style="width:100%;" id="loginBtn">🔓 دخول</button>
   <div id="loginErr"></div>
   <p class="login-hint">
-    أدخل رمز GitHub Token الخاص بالمتجر<br>
-    سيتم حفظه في المتصفح هذا فقط
+    أول 3 خانات بتحدد مكان الريبو بتاعك على GitHub بالظبط، وهتتحفظ في المتصفح ده عشان متكتبهاش كل مرة<br>
+    التوكن سيتم حفظه في المتصفح هذا فقط
   </p>
 </div>
 
