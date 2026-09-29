@@ -69,6 +69,12 @@ function applySocialLinks() {
   
   const waContact = document.getElementById("contactWhatsapp");
   if (waContact) waContact.href = waUrl;
+  // Location Link
+  const locationLink = document.getElementById("locationLink");
+  if (locationLink && cfg.mapUrl) {
+    locationLink.href = cfg.mapUrl;
+    locationLink.target = "_blank";
+  }
 }
 
 // ============================================================
