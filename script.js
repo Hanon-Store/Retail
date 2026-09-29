@@ -158,8 +158,9 @@ if (sideOverlay) {
 
 document.querySelectorAll(".side-link").forEach(link => {
   link.addEventListener("click", (e) => {
-    e.preventDefault();
-    const nav = link.dataset.nav;
+  const nav = link.dataset.nav;
+if (!nav) return;
+e.preventDefault(); 
     const aboutBox = document.getElementById("aboutBox");
     const contactBox = document.getElementById("contactBox");
     if (aboutBox) aboutBox.classList.add("hidden");
