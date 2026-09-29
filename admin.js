@@ -4,12 +4,6 @@
 // ============================================================
 
 // ============================================================
-// إعدادات GitHub
-// ============================================================
-// ============================================================
-// ⚙️ الإعدادات — عدّل 3 سطور بس لما تغيّر مكان المشروع
-// ============================================================
-// ============================================================
 // ⚙️ الإعدادات — بيانات الريبو (يدخلها الأدمن مرة واحدة من شاشة الدخول)
 // ============================================================
 const OWNER_KEY  = "hanon_admin_owner";
@@ -32,11 +26,10 @@ function recomputeGithubPaths() {
 }
 recomputeGithubPaths();
 
-// رابط صفحة الموقع المنشورة (GitHub Pages) — بيتحسب تلقائي حسب الريبو
+// رابط صفحة الموقع المنشورة (GitHub Pages)
 function pagesBaseUrl() {
   const ownerLower = GITHUB_OWNER.toLowerCase();
   const repoLower = GITHUB_REPO.toLowerCase();
-  // لو الريبو هو ريبو الصفحة الرئيسية بتاع الحساب (owner.github.io) مفيش اسم ريبو في الرابط
   if (repoLower === `${ownerLower}.github.io`) {
     return `https://${ownerLower}.github.io`;
   }
@@ -48,8 +41,8 @@ const TOKEN_KEY = "hanon_admin_token";
 let TOKEN = localStorage.getItem(TOKEN_KEY) || "";
 let storeData = null;
 let currentSha = null;
-let pendingImages = {}; // {productId: [File, ...]}
-let pendingFeatured = []; // [File, ...]
+let pendingImages = {};
+let pendingFeatured = [];
 
 const $ = (id) => document.getElementById(id);
 
@@ -77,7 +70,6 @@ function base64ToUtf8(b64) {
   return new TextDecoder().decode(bytes);
 }
 
-// تصغير الصور قبل الرفع
 function compressImage(file, maxSize = 1200, quality = 0.85) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -171,7 +163,7 @@ async function uploadImageToGitHub(base64Content, fileName) {
       const info = await check.json();
       sha = info.sha;
     }
-  } catch (e) { /* مش موجودة */ }
+  } catch (e) {}
   
   const body = {
     message: "رفع صورة: " + fileName,
@@ -200,18 +192,19 @@ async function uploadImageToGitHub(base64Content, fileName) {
 $("loginBtn").onclick = login;
 $("pwInput").addEventListener("keydown", (e) => { if (e.key === "Enter") login(); });
 
-// زر إظهار/إخفاء التوكن
 const togglePw = $("togglePw");
-togglePw.onclick = () => {
-  const inp = $("pwInput");
-  if (inp.type === "password") {
-    inp.type = "text";
-    togglePw.textContent = "🙈";
-  } else {
-    inp.type = "password";
-    togglePw.textContent = "👁️";
-  }
-};
+if (togglePw) {
+  togglePw.onclick = () => {
+    const inp = $("pwInput");
+    if (inp.type === "password") {
+      inp.type = "text";
+      togglePw.textContent = "🙈";
+    } else {
+      inp.type = "password";
+      togglePw.textContent = "👁️";
+    }
+  };
+}
 
 async function login() {
   const owner = $("ownerInput").value.trim().replace(/^\/+|\/+$/g, "");
@@ -265,12 +258,10 @@ async function login() {
   }
 }
 
-// تعبئة الحقول المحفوظة من قبل (لو موجودة)
 if (GITHUB_OWNER) $("ownerInput").value = GITHUB_OWNER;
 if (GITHUB_REPO) $("repoInput").value = GITHUB_REPO;
 if (FOLDER_PATH) $("folderInput").value = FOLDER_PATH;
 
-// محاولة دخول تلقائية
 if (TOKEN && GITHUB_OWNER && GITHUB_REPO) {
   $("pwInput").value = TOKEN;
   login();
@@ -309,7 +300,6 @@ $("reloadBtn").onclick = async () => {
 async function saveAll() {
   showLoading("جاري حفظ التعديلات...");
   try {
-    // 1. رفع الصور المعلقة (Featured)
     if (pendingFeatured.length > 0) {
       showLoading(`جاري رفع ${pendingFeatured.length} صورة مميزة...`);
       if (!storeData.featured) storeData.featured = [];
@@ -323,14 +313,12 @@ async function saveAll() {
       pendingFeatured = [];
     }
     
-    // 2. رفع صور المنتجات
     const pendingCount = Object.values(pendingImages).reduce((a, arr) => a + arr.length, 0);
     if (pendingCount > 0) {
       showLoading(`جاري رفع ${pendingCount} صورة منتج...`);
       await uploadAllPendingImages();
     }
     
-    // 3. حفظ البيانات
     showLoading("جاري حفظ البيانات على GitHub...");
     await saveDataToGitHub();
     showStatus("تم الحفظ ✅ التحديث هيظهر خلال دقيقة", "ok");
@@ -349,7 +337,6 @@ async function uploadAllPendingImages() {
     const files = pendingImages[productId];
     if (!files || files.length === 0) continue;
     
-    // دوّر على المنتج
     let product = null;
     for (const cat of storeData.categories) {
       const p = cat.products.find(pp => pp.id === productId);
@@ -387,8 +374,15 @@ const CONFIG_FIELDS = [
   ["tagline_ar", "التاجلاين (عربي)"],
   ["about_ar", "نبذة عن المتجر (عربي)", true],
   ["whatsappNumber", "رقم واتساب الطلب (بالصيغة الدولية بدون +)"],
-  ["facebook", "رابط صفحة الفيسبوك"],
   ["mapUrl", "رابط الموقع على خرائط جوجل (Google Maps)"]
+];
+
+const SOCIAL_FIELDS = [
+  ["facebook", "رابط صفحة الفيسبوك"],
+  ["messenger", "رابط الماسنجر (https://m.me/…)"],
+  ["instagram", "رابط إنستجرام"],
+  ["tiktok", "رابط تيك توك"],
+  ["telegram", "رابط تليجرام"]
 ];
 
 function renderConfig() {
@@ -405,6 +399,31 @@ function renderConfig() {
     if (!isArea) input.type = "text";
     input.value = cfg[key] || "";
     input.oninput = () => { cfg[key] = input.value; };
+    wrap.appendChild(input);
+  });
+  
+  // ====== قسم روابط التواصل الاجتماعي ======
+  const socialTitle = document.createElement("p");
+  socialTitle.style.cssText = "margin-top:26px;padding-top:18px;border-top:2px solid var(--border);font-family:'Cairo',sans-serif;font-weight:900;font-size:1.15rem;color:var(--marble-dark)";
+  socialTitle.textContent = "🔗 روابط التواصل الاجتماعي";
+  wrap.appendChild(socialTitle);
+  
+  const socialHint = document.createElement("p");
+  socialHint.style.cssText = "color:var(--text-muted);font-size:0.85rem;margin-bottom:12px;font-weight:700;line-height:1.6";
+  socialHint.textContent = "اترك الخانة فاضية لو مش عايز الأيقونة تظهر (ما عدا فيسبوك وواتساب)";
+  wrap.appendChild(socialHint);
+
+  if (!storeData.social) storeData.social = {};
+
+  SOCIAL_FIELDS.forEach(([key, label]) => {
+    const lbl = document.createElement("label");
+    lbl.textContent = label;
+    wrap.appendChild(lbl);
+    const input = document.createElement("input");
+    input.type = "text";
+    input.value = storeData.social[key] || "";
+    input.placeholder = "https://...";
+    input.oninput = () => { storeData.social[key] = input.value; };
     wrap.appendChild(input);
   });
 }
@@ -427,7 +446,6 @@ function renderFeaturedSection() {
   const grid = document.createElement("div");
   grid.className = "images-grid";
   
-  // الصور المرفوعة
   storeData.featured.forEach((imgUrl, i) => {
     const thumb = document.createElement("div");
     thumb.className = "img-thumb";
@@ -450,7 +468,6 @@ function renderFeaturedSection() {
     grid.appendChild(thumb);
   });
   
-  // الصور المعلقة
   pendingFeatured.forEach((file, i) => {
     const thumb = document.createElement("div");
     thumb.className = "img-thumb";
@@ -477,7 +494,6 @@ function renderFeaturedSection() {
     grid.appendChild(thumb);
   });
   
-  // زر الإضافة
   const addBtn = document.createElement("div");
   addBtn.className = "img-add-btn";
   addBtn.innerHTML = `📷<small>إضافة صورة</small>`;
@@ -518,7 +534,6 @@ function buildZoneCard(cat, idx) {
   const card = document.createElement("div");
   card.className = "card";
   
-  // ===== العنوان =====
   const title = document.createElement("div");
   title.className = "card-title";
   
@@ -534,7 +549,6 @@ function buildZoneCard(cat, idx) {
   const actions = document.createElement("div");
   actions.style.cssText = "display:flex;gap:8px;align-items:center;flex-wrap:wrap";
   
-  // زرار الإخفاء/التفعيل
   const visToggle = document.createElement("div");
   visToggle.className = "vis-toggle " + (cat.visible !== false ? "on" : "off");
   visToggle.textContent = cat.visible !== false ? "👁️ ظاهر" : "🚫 مخفي";
@@ -545,7 +559,6 @@ function buildZoneCard(cat, idx) {
     visToggle.textContent = cat.visible !== false ? "👁️ ظاهر" : "🚫 مخفي";
   };
   
-  // زرار حذف القسم
   const delBtn = document.createElement("button");
   delBtn.className = "btn-danger";
   delBtn.textContent = "🗑️ حذف";
@@ -563,7 +576,6 @@ function buildZoneCard(cat, idx) {
   title.appendChild(actions);
   card.appendChild(title);
   
-  // ===== الجسم =====
   const body = document.createElement("div");
   body.className = "zone-body";
   
@@ -572,7 +584,6 @@ function buildZoneCard(cat, idx) {
     title.querySelector(".toggle-chev").classList.toggle("open");
   };
   
-  // حقول القسم
   body.appendChild(fieldRow("اسم القسم (عربي)", cat.name_ar, (v) => { 
     cat.name_ar = v; 
     info.querySelector("span:nth-child(2)").textContent = v; 
@@ -584,7 +595,6 @@ function buildZoneCard(cat, idx) {
   }));
   body.appendChild(fieldRow("رابط صورة القسم", cat.homeImg, (v) => { cat.homeImg = v; }));
   
-  // زر رفع صورة القسم
   const homeImgActions = document.createElement("div");
   homeImgActions.style.cssText = "display:flex;gap:8px;margin-top:10px";
   
@@ -609,7 +619,7 @@ function buildZoneCard(cat, idx) {
       cat.homeImg = url;
       renderZones();
       setTimeout(() => {
-        const newCard = document.querySelectorAll(".card")[idx + 2];
+        const newCard = document.querySelectorAll(".card")[idx + 3];
         if (newCard) {
           newCard.querySelector(".zone-body").classList.add("open");
           newCard.querySelector(".toggle-chev").classList.add("open");
@@ -626,13 +636,11 @@ function buildZoneCard(cat, idx) {
   homeImgActions.appendChild(homeFile);
   body.appendChild(homeImgActions);
   
-  // ====== عنوان المنتجات ======
   const prodsLabel = document.createElement("label");
   prodsLabel.style.cssText = "margin-top:24px;font-size:1.1rem;color:var(--marble-dark)";
   prodsLabel.textContent = "🛍️ المنتجات:";
   body.appendChild(prodsLabel);
   
-  // ====== قائمة المنتجات ======
   const prodsWrap = document.createElement("div");
   body.appendChild(prodsWrap);
   
@@ -642,7 +650,6 @@ function buildZoneCard(cat, idx) {
   }
   rerender();
   
-  // ====== زرار إضافة منتج ======
   const addProdBtn = document.createElement("button");
   addProdBtn.className = "btn-add";
   addProdBtn.textContent = "+ إضافة منتج جديد";
@@ -711,13 +718,11 @@ function buildProductCard(prod, pIdx, cat, rerender) {
   const box = document.createElement("div");
   box.className = "item-box";
   
-  // رقم المنتج
   const num = document.createElement("div");
   num.className = "item-num";
   num.textContent = "#" + (pIdx + 1);
   box.appendChild(num);
   
-  // زر الحذف
   const acts = document.createElement("div");
   acts.className = "item-actions";
   
@@ -732,15 +737,11 @@ function buildProductCard(prod, pIdx, cat, rerender) {
   acts.appendChild(delBtn);
   box.appendChild(acts);
   
-  // حقول الاسم والوصف
   box.appendChild(fieldRow("الاسم (عربي)", prod.name_ar, (v) => { prod.name_ar = v; }));
   box.appendChild(fieldRow("الاسم (English)", prod.name_en, (v) => { prod.name_en = v; }));
   box.appendChild(fieldRow("وصف مختصر (اختياري)", prod.desc_ar, (v) => { prod.desc_ar = v; }));
   
-  // الصور
   box.appendChild(buildImagesSection(prod, rerender));
-  
-  // المقاسات والأسعار
   box.appendChild(buildSizesSection(prod, rerender, cat));
   
   return box;
@@ -758,13 +759,12 @@ function buildImagesSection(prod, rerender) {
   
   const hint = document.createElement("p");
   hint.style.cssText = "font-size:0.8rem;color:var(--text-muted);margin-bottom:8px;font-weight:700";
-  hint.textContent = "أضف صورة أو أكثر للمنتج (يمكنك إضافة صور متعددة)";
+  hint.textContent = "أضف صورة أو أكثر للمنتج (يمكنك إضافة صور متعددة للموديل نفسه بألوان مختلفة)";
   wrap.appendChild(hint);
   
   const grid = document.createElement("div");
   grid.className = "images-grid";
   
-  // الصور الموجودة
   if (!prod.images) prod.images = [];
   prod.images.forEach((imgUrl, i) => {
     const thumb = document.createElement("div");
@@ -788,7 +788,6 @@ function buildImagesSection(prod, rerender) {
     grid.appendChild(thumb);
   });
   
-  // الصور المعلقة
   const pending = pendingImages[prod.id] || [];
   pending.forEach((file, i) => {
     const thumb = document.createElement("div");
@@ -817,7 +816,6 @@ function buildImagesSection(prod, rerender) {
     grid.appendChild(thumb);
   });
   
-  // زر الإضافة
   const addBtn = document.createElement("div");
   addBtn.className = "img-add-btn";
   addBtn.innerHTML = `📷<small>إضافة صورة</small>`;
@@ -858,7 +856,6 @@ function buildSizesSection(prod, rerender, cat) {
   hint.textContent = "اضغط على المقاس لإضافته وحدد سعره — واملأ خانة سعر العرض فقط لو في خصم على المقاس ده";
   wrap.appendChild(hint);
   
-  // المقاسات المختارة مع أسعارها
   const selectedWrap = document.createElement("div");
   selectedWrap.className = "selected-sizes";
   
@@ -922,13 +919,11 @@ function buildSizesSection(prod, rerender, cat) {
   
   wrap.appendChild(selectedWrap);
   
-  // المقاسات الجاهزة - حسب نوع القسم
   const presetsLbl = document.createElement("p");
   presetsLbl.style.cssText = "font-size:0.9rem;color:var(--marble-mid);margin-top:16px;margin-bottom:8px;font-weight:900";
   presetsLbl.textContent = "المقاسات الجاهزة:";
   wrap.appendChild(presetsLbl);
   
-  // اختيار المقاسات حسب القسم
   let presets = SIZE_PRESETS;
   if (cat && (cat.id === "sneakers")) {
     presets = SHOE_PRESETS;
@@ -936,7 +931,6 @@ function buildSizesSection(prod, rerender, cat) {
     presets = SIZE_PRESETS;
   }
   
-  // مجموعة 1: الملابس
   const chipsWrap1 = document.createElement("div");
   chipsWrap1.className = "size-chips";
   
@@ -959,7 +953,6 @@ function buildSizesSection(prod, rerender, cat) {
   
   wrap.appendChild(chipsWrap1);
   
-  // مجموعة 2: مقاسات إضافية
   const extraLbl = document.createElement("p");
   extraLbl.style.cssText = "font-size:0.85rem;color:var(--text-muted);margin-top:12px;margin-bottom:6px;font-weight:700";
   extraLbl.textContent = "مقاسات أخرى:";
@@ -990,7 +983,6 @@ function buildSizesSection(prod, rerender, cat) {
   
   wrap.appendChild(chipsWrap2);
   
-  // إضافة مقاس مخصص
   const customWrap = document.createElement("div");
   customWrap.style.cssText = "display:flex;gap:8px;margin-top:14px";
   

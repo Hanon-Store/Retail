@@ -1338,3 +1338,143 @@ main {
     scroll-behavior: auto !important;
   }
 }
+/* ============================================================
+   SPLASH — Logo image (بدل النص العربي)
+============================================================ */
+.splash-logo {
+  width: 220px;
+  max-width: 65vw;
+  height: auto;
+  margin: 0 auto 22px;
+  display: block;
+  filter: drop-shadow(0 0 40px rgba(242, 106, 27, 0.5));
+  animation: splashLogoIn 1.2s ease-out;
+}
+
+@keyframes splashLogoIn {
+  from { opacity: 0; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@media (max-width: 500px) {
+  .splash-logo { width: 180px; }
+}
+
+/* ============================================================
+   CART HEADER — أزرار "تنفيذ" + "إضافة المزيد"
+============================================================ */
+.cart-header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.cart-hdr-btn {
+  padding: 9px 16px;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 900;
+  cursor: pointer;
+  border: 1.5px solid var(--line);
+  background: var(--surface-2);
+  color: var(--text);
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+  white-space: nowrap;
+}
+
+.cart-hdr-btn:hover { border-color: var(--orange); }
+
+.cart-hdr-confirm {
+  background: var(--orange);
+  border-color: var(--orange);
+  color: #fff;
+}
+
+.cart-hdr-confirm:hover {
+  background: var(--orange-hi);
+  border-color: var(--orange-hi);
+}
+
+.cart-hdr-more { background: var(--surface-2); color: var(--text); }
+
+.cart-hdr-more:hover { color: var(--orange); }
+
+@media (max-width: 420px) {
+  .cart-hdr-btn { padding: 8px 12px; font-size: 0.78rem; }
+}
+
+/* ============================================================
+   CART FOOTER — تأكيد الطلبات + واتساب + ماسنجر
+============================================================ */
+.cart-confirm-title {
+  text-align: center;
+  font-family: 'Cairo', sans-serif;
+  font-weight: 900;
+  font-size: 1rem;
+  color: var(--text);
+  margin-bottom: 12px;
+  letter-spacing: 0.5px;
+}
+
+.cart-confirm-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.confirm-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 18px 12px;
+  border-radius: 14px;
+  font-family: 'Cairo', sans-serif;
+  font-weight: 900;
+  font-size: 1rem;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: filter 0.2s, transform 0.15s;
+  min-height: 78px;
+}
+
+.confirm-btn:active { transform: scale(0.97); }
+.confirm-btn:hover { filter: brightness(1.08); }
+
+.confirm-btn svg { flex-shrink: 0; }
+
+.confirm-whatsapp { background: var(--whatsapp); }
+
+.confirm-messenger {
+  background: linear-gradient(135deg, #0084FF 0%, #0064E0 100%);
+}
+
+.confirm-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: none;
+}
+
+/* ============================================================
+   FOOTER SOCIAL — ألوان الأيقونات الجديدة
+============================================================ */
+#instagramLink:hover {
+  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+  border-color: #dc2743;
+}
+
+#tiktokLink:hover {
+  background: #000;
+  border-color: #fff;
+}
+
+#telegramLink:hover {
+  background: #229ED9;
+  border-color: #229ED9;
+}
+
+.footer-social { flex-wrap: wrap; }
