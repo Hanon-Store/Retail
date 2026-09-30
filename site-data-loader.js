@@ -29,6 +29,7 @@
               desc_ar: p.desc_ar || '',
               desc_en: p.desc_en || '',
               images: p.images || [],
+              colors: p.colors || [],
               sizes: p.sizes || []
             };
           })

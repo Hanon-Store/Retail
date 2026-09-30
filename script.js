@@ -551,6 +551,7 @@ function buildProductCard(prod) {
       ${firstImg ? `<img class="pc-img" src="${firstImg}" alt="${prod.name_ar}" loading="lazy" onerror="this.style.opacity=0.3">` : '<div class="pc-img" style="background:#1c1c1e;display:flex;align-items:center;justify-content:center;font-size:3rem;">👕</div>'}
       ${dotsHtml}
     </div>
+    ${hasMultiple ? '<div class="pc-colors"><div class="pc-color-label">اللون المختار: <b class="pc-color-name"></b></div><div class="pc-color-chips"></div></div>' : ""}
     ${cardHasOffer ? '<span class="offer-badge card-offer-badge">عرض خاص</span>' : ""}
     <h3 class="pc-name">${prod.name_ar}</h3>
     ${prod.desc_ar ? `<p class="pc-desc">${prod.desc_ar}</p>` : '<p class="pc-desc"></p>'}
@@ -568,8 +569,33 @@ function buildProductCard(prod) {
   `;
 
   // ============ تفاعل مع معرض الصور (سحب/لمس) ============
+  // اسم اللون لكل صورة (لو مفيش اسم مكتوب نستخدم رقم الصورة)
+  const colorNameAt = (i) => {
+    const n = ((prod.colors || [])[i] || "").trim();
+    if (n) return n;
+    return hasMultiple ? `الصورة رقم ${i + 1}` : "";
+  };
+  let selectedColorIdx = 0;
+
   if (hasMultiple) {
-    setupProductGallery(card, prod, images);
+    const nameEl = card.querySelector(".pc-color-name");
+    const chipsBox = card.querySelector(".pc-color-chips");
+    const chips = images.map((_, i) => {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "pc-color-chip" + (i === 0 ? " active" : "");
+      chip.textContent = colorNameAt(i);
+      chip.addEventListener("click", () => { if (card._showImage) card._showImage(i); });
+      chipsBox.appendChild(chip);
+      return chip;
+    });
+    const updateColorUI = (i) => {
+      selectedColorIdx = i;
+      nameEl.textContent = colorNameAt(i);
+      chips.forEach((c, ci) => c.classList.toggle("active", ci === i));
+    };
+    updateColorUI(0);
+    setupProductGallery(card, prod, images, updateColorUI);
   }
 
   // ============ تفاعل مع المقاسات ============
@@ -598,13 +624,13 @@ function buildProductCard(prod) {
   addBtn.addEventListener("click", () => {
     if (!selectedSize) return;
 
-    // نستخدم الصورة المعروضة حالياً
-    const currentImg = card.querySelector(".pc-img");
-    const cartImg = currentImg ? currentImg.src : firstImg;
+    // نستخدم صورة واسم اللون المعروضين حالياً
+    const cartImg = images[selectedColorIdx] || firstImg;
 
     addToCart({
       productId: prod.id,
       name: prod.name_ar,
+      color: colorNameAt(selectedColorIdx),
       size: selectedSize,
       price: selectedPrice,
       image: cartImg,
@@ -624,7 +650,7 @@ function buildProductCard(prod) {
 // ============================================================
 // إعداد معرض صور المنتج (سحب / لمس بين الصور)
 // ============================================================
-function setupProductGallery(card, prod, images) {
+function setupProductGallery(card, prod, images, onChange) {
   const box = card.querySelector(".pc-img-box");
   const img = card.querySelector(".pc-img");
   const dots = card.querySelectorAll(".pc-g-dot");
@@ -638,7 +664,9 @@ function setupProductGallery(card, prod, images) {
     idx = i;
     img.src = images[idx];
     dots.forEach((d, di) => d.classList.toggle("active", di === idx));
+    if (onChange) onChange(idx);
   }
+  card._showImage = show;
 
   // الضغط على النقاط
   dots.forEach((d, di) => {
@@ -814,7 +842,7 @@ function renderCart() {
       row.innerHTML = `
         <div class="cart-line-info">
           <strong>${line.qty} × ${line.name}</strong>
-          <span class="line-price">المقاس: ${line.size} - ${line.price * line.qty} ج.م</span>
+          <span class="line-price">${line.color ? `اللون: ${line.color} - ` : ""}المقاس: ${line.size} - ${line.price * line.qty} ج.م</span>
         </div>
         <button class="remove-line" aria-label="remove">✕</button>
       `;
@@ -840,6 +868,7 @@ function buildOrderText() {
   let msg = "🛍️ *طلب جديد من حنون*\n\n";
   cart.forEach(l => {
     msg += `▪️ ${l.qty} × ${l.name}\n`;
+    if (l.color) msg += `   اللون: ${l.color}\n`;
     msg += `   المقاس: ${l.size} - ${l.price * l.qty} ج.م\n\n`;
   });
   const total = cart.reduce((a, l) => a + l.price * l.qty, 0);

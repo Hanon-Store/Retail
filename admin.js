@@ -345,6 +345,8 @@ async function uploadAllPendingImages() {
     if (!product) continue;
     
     if (!product.images) product.images = [];
+    if (!product.colors) product.colors = [];
+    while (product.colors.length < product.images.length) product.colors.push("");
     
     for (const file of files) {
       const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
@@ -352,6 +354,7 @@ async function uploadAllPendingImages() {
       const b64 = await compressImage(file);
       const url = await uploadImageToGitHub(b64, fileName);
       product.images.push(url);
+      product.colors.push((file.colorName || "").trim());
     }
   }
 }
@@ -662,6 +665,7 @@ function buildZoneCard(cat, idx) {
       desc_ar: "",
       desc_en: "",
       images: [],
+      colors: [],
       sizes: []
     });
     rerender();
@@ -759,14 +763,29 @@ function buildImagesSection(prod, rerender) {
   
   const hint = document.createElement("p");
   hint.style.cssText = "font-size:0.8rem;color:var(--text-muted);margin-bottom:8px;font-weight:700";
-  hint.textContent = "أضف صورة أو أكثر للمنتج (يمكنك إضافة صور متعددة للموديل نفسه بألوان مختلفة)";
+  hint.textContent = "أضف صورة لكل لون، واكتب اسم اللون تحت الصورة (مثال: أسود، أبيض، كحلي) — الاسم ده هو اللي هيوصلك في رسالة الطلب";
   wrap.appendChild(hint);
   
   const grid = document.createElement("div");
   grid.className = "images-grid";
   
   if (!prod.images) prod.images = [];
+  if (!prod.colors) prod.colors = [];
+  while (prod.colors.length < prod.images.length) prod.colors.push("");
+
+  function makeColorInput(value, onChange) {
+    const inp = document.createElement("input");
+    inp.type = "text";
+    inp.className = "img-color-input";
+    inp.placeholder = "اسم اللون";
+    inp.value = value || "";
+    inp.oninput = () => onChange(inp.value);
+    return inp;
+  }
+
   prod.images.forEach((imgUrl, i) => {
+    const cell = document.createElement("div");
+    cell.className = "img-cell";
     const thumb = document.createElement("div");
     thumb.className = "img-thumb";
     
@@ -780,16 +799,21 @@ function buildImagesSection(prod, rerender) {
     del.onclick = () => {
       if (!confirm("حذف هذه الصورة؟")) return;
       prod.images.splice(i, 1);
+      prod.colors.splice(i, 1);
       rerender();
     };
     
     thumb.appendChild(img);
     thumb.appendChild(del);
-    grid.appendChild(thumb);
+    cell.appendChild(thumb);
+    cell.appendChild(makeColorInput(prod.colors[i], v => { prod.colors[i] = v; }));
+    grid.appendChild(cell);
   });
   
   const pending = pendingImages[prod.id] || [];
   pending.forEach((file, i) => {
+    const cell = document.createElement("div");
+    cell.className = "img-cell";
     const thumb = document.createElement("div");
     thumb.className = "img-thumb";
     thumb.style.borderColor = "var(--gold)";
@@ -813,7 +837,9 @@ function buildImagesSection(prod, rerender) {
     thumb.appendChild(img);
     thumb.appendChild(del);
     thumb.appendChild(badge);
-    grid.appendChild(thumb);
+    cell.appendChild(thumb);
+    cell.appendChild(makeColorInput(file.colorName, v => { file.colorName = v; }));
+    grid.appendChild(cell);
   });
   
   const addBtn = document.createElement("div");

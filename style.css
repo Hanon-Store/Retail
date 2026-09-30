@@ -1478,3 +1478,22 @@ main {
 }
 
 .footer-social { flex-wrap: wrap; }
+
+/* ============ اختيار اللون (كارت المنتج) ============ */
+.pc-colors { margin: 8px 0 4px; }
+.pc-color-label { font-size: 0.85rem; color: var(--muted); font-weight: 700; margin-bottom: 6px; }
+.pc-color-label b { color: var(--orange-hi); font-weight: 900; }
+.pc-color-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.pc-color-chip {
+  padding: 6px 12px;
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+.pc-color-chip:hover { border-color: var(--orange); }
+.pc-color-chip.active { background: var(--orange); border-color: var(--orange); color: #fff; }
