@@ -24,12 +24,9 @@
     "telegram": ""
   },
   "featured": [
-    "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=80",
-    "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=800&q=80",
-    "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80",
-    "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=800&q=80",
-    "https://images.unsplash.com/photo-1620012253295-c15cc3e65df4?w=800&q=80",
-    "https://images.unsplash.com/photo-1542272604-787c3835535d?w=800&q=80"
+    "https://hanon-store.github.io/Retail/assets/uploads/featured_1790729690420_8ztn.png",
+    "https://hanon-store.github.io/Retail/assets/uploads/featured_1790729693147_swr7.png",
+    "https://hanon-store.github.io/Retail/assets/uploads/featured_1790729695930_q8zs.png"
   ],
   "categories": [
     {
@@ -37,7 +34,7 @@
       "icon": "👕",
       "name_ar": "تيشيرتات رجالي",
       "name_en": "Men's T-Shirts",
-      "homeImg": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=600&q=80",
+      "homeImg": "https://hanon-store.github.io/Retail/assets/uploads/cat_tshirts_1790729664358.png",
       "visible": true,
       "products": [
         {
